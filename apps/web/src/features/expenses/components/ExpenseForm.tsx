@@ -3,15 +3,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { Card, CreateExpenseDTO, ExpenseType } from '@finance/types'
+import type { Card, Category, CreateExpenseDTO, ExpenseType } from '@finance/types'
 
 interface Props {
   cards: Card[]
+  categories?: Category[]
   onSubmit: (data: CreateExpenseDTO) => void
   loading?: boolean
 }
 
-export function ExpenseForm({ cards, onSubmit, loading }: Props) {
+export function ExpenseForm({ cards, categories = [], onSubmit, loading }: Props) {
   const today = new Date().toISOString().split('T')[0]
   const [form, setForm] = useState({
     description: '',
@@ -21,6 +22,7 @@ export function ExpenseForm({ cards, onSubmit, loading }: Props) {
     cardId: '',
     installmentCount: '',
     endDate: '',
+    categoryId: '',
   })
 
   function handleSubmit(e: React.FormEvent) {
@@ -33,6 +35,7 @@ export function ExpenseForm({ cards, onSubmit, loading }: Props) {
       cardId: form.cardId,
       installmentCount: form.type === 'INSTALLMENT' ? Number(form.installmentCount) : undefined,
       endDate: form.type === 'RECURRING' && form.endDate ? form.endDate : undefined,
+      categoryId: form.categoryId || null,
     })
   }
 
@@ -81,6 +84,25 @@ export function ExpenseForm({ cards, onSubmit, loading }: Props) {
           </Select>
         </div>
       </div>
+
+      {categories.length > 0 && (
+        <div className="space-y-1">
+          <Label>Categoría (opcional)</Label>
+          <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v === '__none__' ? '' : v })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sin categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Sin categoría</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.icon ? `${cat.icon} ` : ''}{cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {form.type === 'INSTALLMENT' && (
         <div className="space-y-1">

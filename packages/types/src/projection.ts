@@ -34,4 +34,7 @@ export interface ChargeDetail {
   cardId: string
   cardName: string
   isPaid: boolean
+  categoryId: string | null
+  categoryName: string | null
+  categoryColor: string | null
 }

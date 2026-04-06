@@ -11,6 +11,7 @@ export interface Expense {
   endDate: string | null
   isActive: boolean
   createdAt: string
+  categoryId: string | null
 }
 
 export interface CreateExpenseDTO {
@@ -23,6 +24,7 @@ export interface CreateExpenseDTO {
   installmentCount?: number
   // RECURRING only
   endDate?: string
+  categoryId?: string | null
 }
 
 export interface UpdateExpenseDTO extends Partial<CreateExpenseDTO> {}

@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useMonthDetail } from '../hooks/useProjection'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatMonth } from '@/lib/utils'
+import { CategoryBadge } from '@/features/categories/components/CategoryBadge'
 
 export function MonthDetailPage() {
   const { year, month } = useParams<{ year: string; month: string }>()
@@ -35,6 +36,15 @@ export function MonthDetailPage() {
                   ? ` · Cuota ${charge.installmentNo}/${charge.installmentCount}`
                   : ' · Recurrente'}
               </p>
+              {charge.categoryName && (
+                <div className="mt-1">
+                  <CategoryBadge
+                    name={charge.categoryName}
+                    color={charge.categoryColor}
+                    icon={null}
+                  />
+                </div>
+              )}
             </div>
             <span className="font-semibold text-sm">{formatCurrency(charge.amount)}</span>
           </div>
