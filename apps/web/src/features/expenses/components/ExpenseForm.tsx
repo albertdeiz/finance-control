@@ -3,26 +3,27 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { Card, Category, CreateExpenseDTO, ExpenseType } from '@finance/types'
+import type { Card, Category, CreateExpenseDTO, Expense, ExpenseType } from '@finance/types'
 
 interface Props {
   cards: Card[]
   categories?: Category[]
+  initial?: Expense
   onSubmit: (data: CreateExpenseDTO) => void
   loading?: boolean
 }
 
-export function ExpenseForm({ cards, categories = [], onSubmit, loading }: Props) {
+export function ExpenseForm({ cards, categories = [], initial, onSubmit, loading }: Props) {
   const today = new Date().toISOString().split('T')[0]
   const [form, setForm] = useState({
-    description: '',
-    amount: '',
-    type: 'INSTALLMENT' as ExpenseType,
-    purchaseDate: today,
-    cardId: '',
-    installmentCount: '',
-    endDate: '',
-    categoryId: '',
+    description: initial?.description ?? '',
+    amount: initial?.amount?.toString() ?? '',
+    type: (initial?.type ?? 'INSTALLMENT') as ExpenseType,
+    purchaseDate: initial?.purchaseDate ? initial.purchaseDate.split('T')[0] : today,
+    cardId: initial?.cardId ?? '',
+    installmentCount: initial?.installmentCount?.toString() ?? '',
+    endDate: initial?.endDate ? initial.endDate.split('T')[0] : '',
+    categoryId: initial?.categoryId ?? '',
   })
 
   function handleSubmit(e: React.FormEvent) {

@@ -1,20 +1,23 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import { useExpenses, useCreateExpense, useDeleteExpense } from '../hooks/useExpenses'
+import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from '../hooks/useExpenses'
 import { useCards } from '@/features/cards/hooks/useCards'
 import { useCategories } from '@/features/categories/hooks/useCategories'
 import { ExpenseForm } from '../components/ExpenseForm'
 import { ExpenseItem } from '../components/ExpenseItem'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import type { Expense } from '@finance/types'
 
 export function ExpensesPage() {
   const { data: expenses, isLoading } = useExpenses()
   const { data: cards } = useCards()
   const { data: categories } = useCategories()
   const createExpense = useCreateExpense()
+  const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
-  const [open, setOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<Expense | null>(null)
 
   if (isLoading) return <div className="text-muted-foreground text-sm">Cargando...</div>
 
@@ -25,7 +28,7 @@ export function ExpensesPage() {
           <h2 className="text-xl font-semibold">Gastos</h2>
           <p className="text-sm text-muted-foreground">Cuotas y gastos recurrentes</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button disabled={!cards?.length}>
               <Plus size={16} />
@@ -41,13 +44,34 @@ export function ExpensesPage() {
               categories={categories ?? []}
               onSubmit={async (data) => {
                 await createExpense.mutateAsync(data)
-                setOpen(false)
+                setCreateOpen(false)
               }}
               loading={createExpense.isPending}
             />
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Edit dialog */}
+      <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar gasto</DialogTitle>
+          </DialogHeader>
+          {editTarget && (
+            <ExpenseForm
+              cards={cards ?? []}
+              categories={categories ?? []}
+              initial={editTarget}
+              onSubmit={async (data) => {
+                await updateExpense.mutateAsync({ id: editTarget.id, data })
+                setEditTarget(null)
+              }}
+              loading={updateExpense.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-3">
         {expenses?.length === 0 && (
@@ -61,6 +85,7 @@ export function ExpensesPage() {
             <ExpenseItem
               key={expense.id}
               expense={expense}
+              onEdit={setEditTarget}
               onDelete={(id) => deleteExpense.mutate(id)}
               category={category}
             />

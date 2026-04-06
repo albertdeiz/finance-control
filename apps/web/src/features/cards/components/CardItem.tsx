@@ -1,13 +1,14 @@
-import { Trash2 } from 'lucide-react'
+import { Trash2, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Card } from '@finance/types'
 
 interface Props {
   card: Card
+  onEdit: (card: Card) => void
   onDelete: (id: string) => void
 }
 
-export function CardItem({ card, onDelete }: Props) {
+export function CardItem({ card, onEdit, onDelete }: Props) {
   return (
     <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
       <div className="flex items-center gap-3">
@@ -20,6 +21,9 @@ export function CardItem({ card, onDelete }: Props) {
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span>Corte: día {card.cutoffDay}</span>
         <span>Pago: día {card.paymentDueDay}</span>
+        <Button variant="ghost" size="icon" onClick={() => onEdit(card)}>
+          <Pencil size={14} />
+        </Button>
         <Button variant="ghost" size="icon" onClick={() => onDelete(card.id)} className="text-red-500 hover:text-red-600">
           <Trash2 size={14} />
         </Button>
