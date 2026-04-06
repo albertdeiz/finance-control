@@ -3,8 +3,11 @@ import { ExpenseEntity } from '../../../domain/entities/expense.entity'
 import { prisma } from '../prisma.client'
 
 export class PrismaExpenseRepository implements IExpenseRepository {
-  async findAll(): Promise<ExpenseEntity[]> {
-    const expenses = await prisma.expense.findMany({ orderBy: { createdAt: 'desc' } })
+  async findAllByUserId(userId: string): Promise<ExpenseEntity[]> {
+    const expenses = await prisma.expense.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    })
     return expenses.map(this.toEntity)
   }
 
@@ -16,11 +19,13 @@ export class PrismaExpenseRepository implements IExpenseRepository {
   async create(data: Omit<ExpenseEntity, 'id' | 'createdAt'>): Promise<ExpenseEntity> {
     const expense = await prisma.expense.create({
       data: {
+        userId: data.userId,
         description: data.description,
         amount: data.amount,
         type: data.type,
         purchaseDate: data.purchaseDate,
         cardId: data.cardId,
+        categoryId: data.categoryId ?? undefined,
         installmentCount: data.installmentCount ?? undefined,
         endDate: data.endDate ?? undefined,
         isActive: data.isActive,
@@ -38,6 +43,7 @@ export class PrismaExpenseRepository implements IExpenseRepository {
         type: data.type,
         purchaseDate: data.purchaseDate,
         cardId: data.cardId,
+        categoryId: data.categoryId,
         installmentCount: data.installmentCount,
         endDate: data.endDate,
         isActive: data.isActive,
@@ -53,11 +59,13 @@ export class PrismaExpenseRepository implements IExpenseRepository {
   private toEntity(expense: any): ExpenseEntity {
     return {
       id: expense.id,
+      userId: expense.userId,
       description: expense.description,
       amount: Number(expense.amount),
       type: expense.type,
       purchaseDate: expense.purchaseDate,
       cardId: expense.cardId,
+      categoryId: expense.categoryId,
       installmentCount: expense.installmentCount,
       endDate: expense.endDate,
       isActive: expense.isActive,

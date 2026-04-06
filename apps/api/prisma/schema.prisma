@@ -7,8 +7,31 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  cards        Card[]
+  categories   Category[]
+  expenses     Expense[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  name      String
+  color     String?
+  icon      String?
+  createdAt DateTime  @default(now())
+  expenses  Expense[]
+}
+
 model Card {
   id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
   name          String
   bank          String?
   color         String?
@@ -20,30 +43,34 @@ model Card {
 }
 
 model Expense {
-  id               String    @id @default(cuid())
+  id               String     @id @default(cuid())
+  userId           String
+  user             User       @relation(fields: [userId], references: [id])
   description      String
   amount           Float
-  type             String    // "INSTALLMENT" | "RECURRING"
+  type             String
   purchaseDate     DateTime
   cardId           String
-  card             Card      @relation(fields: [cardId], references: [id])
+  card             Card       @relation(fields: [cardId], references: [id])
+  categoryId       String?
+  category         Category?  @relation(fields: [categoryId], references: [id])
   installmentCount Int?
   endDate          DateTime?
-  isActive         Boolean   @default(true)
-  createdAt        DateTime  @default(now())
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
   charges          Charge[]
 }
 
 model Charge {
-  id             String    @id @default(cuid())
-  expenseId      String
-  expense        Expense   @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-  amount         Float
-  billingYear    Int
-  billingMonth   Int
-  installmentNo  Int?
-  isPaid         Boolean   @default(false)
-  paidAt         DateTime?
+  id            String    @id @default(cuid())
+  expenseId     String
+  expense       Expense   @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  amount        Float
+  billingYear   Int
+  billingMonth  Int
+  installmentNo Int?
+  isPaid        Boolean   @default(false)
+  paidAt        DateTime?
 
   @@unique([expenseId, billingYear, billingMonth])
   @@index([billingYear, billingMonth])

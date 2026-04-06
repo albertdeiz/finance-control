@@ -3,8 +3,11 @@ import { CardEntity } from '../../../domain/entities/card.entity'
 import { prisma } from '../prisma.client'
 
 export class PrismaCardRepository implements ICardRepository {
-  async findAll(): Promise<CardEntity[]> {
-    const cards = await prisma.card.findMany({ orderBy: { createdAt: 'asc' } })
+  async findAllByUserId(userId: string): Promise<CardEntity[]> {
+    const cards = await prisma.card.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+    })
     return cards.map(this.toEntity)
   }
 
@@ -16,6 +19,7 @@ export class PrismaCardRepository implements ICardRepository {
   async create(data: Omit<CardEntity, 'id' | 'createdAt'>): Promise<CardEntity> {
     const card = await prisma.card.create({
       data: {
+        userId: data.userId,
         name: data.name,
         bank: data.bank,
         color: data.color,
@@ -49,6 +53,7 @@ export class PrismaCardRepository implements ICardRepository {
   private toEntity(card: any): CardEntity {
     return {
       id: card.id,
+      userId: card.userId,
       name: card.name,
       bank: card.bank,
       color: card.color,

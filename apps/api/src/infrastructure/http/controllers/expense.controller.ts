@@ -14,25 +14,30 @@ const chargeRepo = new PrismaChargeRepository()
 
 export const expenseController = {
   async list(c: Context) {
-    const expenses = await new GetExpensesUseCase(expenseRepo).execute()
+    const userId = c.get('userId') as string
+    const expenses = await new GetExpensesUseCase(expenseRepo).execute(userId)
     return c.json(expenses)
   },
   async get(c: Context) {
-    const expense = await new GetExpenseUseCase(expenseRepo, chargeRepo).execute(c.req.param('id'))
+    const userId = c.get('userId') as string
+    const expense = await new GetExpenseUseCase(expenseRepo, chargeRepo).execute(c.req.param('id')!, userId)
     return c.json(expense)
   },
   async create(c: Context) {
+    const userId = c.get('userId') as string
     const body = await c.req.json()
-    const expense = await new CreateExpenseUseCase(expenseRepo, chargeRepo, cardRepo).execute(body)
+    const expense = await new CreateExpenseUseCase(expenseRepo, chargeRepo, cardRepo).execute({ ...body, userId })
     return c.json(expense, 201)
   },
   async update(c: Context) {
+    const userId = c.get('userId') as string
     const body = await c.req.json()
-    const expense = await new UpdateExpenseUseCase(expenseRepo, chargeRepo, cardRepo).execute({ id: c.req.param('id'), ...body })
+    const expense = await new UpdateExpenseUseCase(expenseRepo, chargeRepo, cardRepo).execute({ id: c.req.param('id'), userId, ...body })
     return c.json(expense)
   },
   async delete(c: Context) {
-    await new DeleteExpenseUseCase(expenseRepo).execute(c.req.param('id'))
+    const userId = c.get('userId') as string
+    await new DeleteExpenseUseCase(expenseRepo).execute(c.req.param('id')!, userId)
     return c.json({ success: true })
   },
 }

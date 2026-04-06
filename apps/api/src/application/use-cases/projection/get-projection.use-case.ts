@@ -4,9 +4,9 @@ import { MonthlyProjection } from '@finance/types'
 export class GetProjectionUseCase {
   constructor(private chargeRepo: IChargeRepository) {}
 
-  async execute(months: number = 12): Promise<MonthlyProjection[]> {
+  async execute(months: number = 12, userId: string): Promise<MonthlyProjection[]> {
     const now = new Date()
-    const totals = await this.chargeRepo.getMonthlyTotals(now.getFullYear(), now.getMonth() + 1, months)
+    const totals = await this.chargeRepo.getMonthlyTotals(now.getFullYear(), now.getMonth() + 1, months, userId)
 
     return totals.map((t, i) => ({
       year: t.year,

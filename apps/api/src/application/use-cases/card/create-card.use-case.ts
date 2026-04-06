@@ -2,6 +2,7 @@ import { ICardRepository } from '../../../domain/repositories/card.repository'
 import { CardEntity } from '../../../domain/entities/card.entity'
 
 interface Input {
+  userId: string
   name: string
   bank?: string
   color?: string
@@ -15,6 +16,7 @@ export class CreateCardUseCase {
 
   async execute(input: Input): Promise<CardEntity> {
     return this.cardRepo.create({
+      userId: input.userId,
       name: input.name,
       bank: input.bank ?? null,
       color: input.color ?? null,

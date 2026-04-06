@@ -10,25 +10,30 @@ const repo = new PrismaCardRepository()
 
 export const cardController = {
   async list(c: Context) {
-    const cards = await new GetCardsUseCase(repo).execute()
+    const userId = c.get('userId') as string
+    const cards = await new GetCardsUseCase(repo).execute(userId)
     return c.json(cards)
   },
   async get(c: Context) {
-    const card = await new GetCardUseCase(repo).execute(c.req.param('id'))
+    const userId = c.get('userId') as string
+    const card = await new GetCardUseCase(repo).execute(c.req.param('id')!, userId)
     return c.json(card)
   },
   async create(c: Context) {
+    const userId = c.get('userId') as string
     const body = await c.req.json()
-    const card = await new CreateCardUseCase(repo).execute(body)
+    const card = await new CreateCardUseCase(repo).execute({ ...body, userId })
     return c.json(card, 201)
   },
   async update(c: Context) {
+    const userId = c.get('userId') as string
     const body = await c.req.json()
-    const card = await new UpdateCardUseCase(repo).execute({ id: c.req.param('id'), ...body })
+    const card = await new UpdateCardUseCase(repo).execute({ id: c.req.param('id'), userId, ...body })
     return c.json(card)
   },
   async delete(c: Context) {
-    await new DeleteCardUseCase(repo).execute(c.req.param('id'))
+    const userId = c.get('userId') as string
+    await new DeleteCardUseCase(repo).execute(c.req.param('id')!, userId)
     return c.json({ success: true })
   },
 }

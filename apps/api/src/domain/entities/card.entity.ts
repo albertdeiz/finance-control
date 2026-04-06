@@ -1,5 +1,6 @@
 export interface CardEntity {
   id: string
+  userId: string
   name: string
   bank: string | null
   color: string | null

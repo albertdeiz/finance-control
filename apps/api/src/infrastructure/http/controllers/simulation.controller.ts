@@ -8,8 +8,9 @@ const chargeRepo = new PrismaChargeRepository()
 
 export const simulationController = {
   async simulate(c: Context) {
+    const userId = c.get('userId') as string
     const body = await c.req.json()
-    const result = await new SimulateExpenseUseCase(cardRepo, chargeRepo).execute(body)
+    const result = await new SimulateExpenseUseCase(cardRepo, chargeRepo).execute({ ...body, userId })
     return c.json(result)
   },
 }

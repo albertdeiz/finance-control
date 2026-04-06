@@ -8,6 +8,7 @@ const PROJECTION_HORIZON_MONTHS = 12
 const SIMULATION_HORIZON_MONTHS = 24
 
 interface Input {
+  userId: string
   description: string
   amount: number
   type: 'INSTALLMENT' | 'RECURRING'
@@ -35,7 +36,8 @@ export class SimulateExpenseUseCase {
     const baseline = await this.chargeRepo.getMonthlyTotals(
       now.getFullYear(),
       now.getMonth() + 1,
-      PROJECTION_HORIZON_MONTHS
+      PROJECTION_HORIZON_MONTHS,
+      input.userId
     )
 
     // Build simulated charges map

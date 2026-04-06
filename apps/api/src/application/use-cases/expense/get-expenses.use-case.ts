@@ -3,7 +3,7 @@ import { ExpenseEntity } from '../../../domain/entities/expense.entity'
 
 export class GetExpensesUseCase {
   constructor(private expenseRepo: IExpenseRepository) {}
-  async execute(): Promise<ExpenseEntity[]> {
-    return this.expenseRepo.findAll()
+  async execute(userId: string): Promise<ExpenseEntity[]> {
+    return this.expenseRepo.findAllByUserId(userId)
   }
 }

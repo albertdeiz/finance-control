@@ -1,9 +1,10 @@
 import { ICardRepository } from '../../../domain/repositories/card.repository'
 import { CardEntity } from '../../../domain/entities/card.entity'
-import { NotFoundError } from '../../../domain/errors/domain.errors'
+import { NotFoundError, ForbiddenError } from '../../../domain/errors/domain.errors'
 
 interface Input {
   id: string
+  userId: string
   name?: string
   bank?: string
   color?: string
@@ -18,6 +19,7 @@ export class UpdateCardUseCase {
   async execute(input: Input): Promise<CardEntity> {
     const existing = await this.cardRepo.findById(input.id)
     if (!existing) throw new NotFoundError('Card', input.id)
+    if (existing.userId !== input.userId) throw new ForbiddenError()
     return this.cardRepo.update(input.id, {
       name: input.name,
       bank: input.bank,

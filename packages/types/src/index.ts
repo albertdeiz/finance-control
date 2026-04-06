@@ -1,4 +1,6 @@
+export * from './auth'
 export * from './card'
+export * from './category'
 export * from './expense'
 export * from './projection'
 export * from './simulation'

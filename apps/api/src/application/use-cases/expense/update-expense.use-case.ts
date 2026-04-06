@@ -2,16 +2,18 @@ import { IExpenseRepository } from '../../../domain/repositories/expense.reposit
 import { IChargeRepository } from '../../../domain/repositories/charge.repository'
 import { ICardRepository } from '../../../domain/repositories/card.repository'
 import { ExpenseEntity } from '../../../domain/entities/expense.entity'
-import { NotFoundError } from '../../../domain/errors/domain.errors'
+import { NotFoundError, ForbiddenError } from '../../../domain/errors/domain.errors'
 import { getBillingMonth, addMonths } from '../../../shared/billing'
 
 interface Input {
   id: string
+  userId: string
   description?: string
   amount?: number
   type?: 'INSTALLMENT' | 'RECURRING'
   purchaseDate?: string
   cardId?: string
+  categoryId?: string
   installmentCount?: number
   endDate?: string
 }
@@ -26,6 +28,7 @@ export class UpdateExpenseUseCase {
   async execute(input: Input): Promise<ExpenseEntity> {
     const existing = await this.expenseRepo.findById(input.id)
     if (!existing) throw new NotFoundError('Expense', input.id)
+    if (existing.userId !== input.userId) throw new ForbiddenError()
 
     const updated = await this.expenseRepo.update(input.id, {
       description: input.description,
@@ -33,6 +36,7 @@ export class UpdateExpenseUseCase {
       type: input.type,
       purchaseDate: input.purchaseDate ? new Date(input.purchaseDate) : undefined,
       cardId: input.cardId,
+      categoryId: input.categoryId,
       installmentCount: input.installmentCount,
       endDate: input.endDate ? new Date(input.endDate) : undefined,
     })

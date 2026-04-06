@@ -3,12 +3,19 @@ import { ChargeEntity } from '../../../domain/entities/charge.entity'
 import { prisma } from '../prisma.client'
 
 export class PrismaChargeRepository implements IChargeRepository {
-  async findByMonth(year: number, month: number) {
+  async findByMonth(year: number, month: number, userId: string) {
     const charges = await prisma.charge.findMany({
-      where: { billingYear: year, billingMonth: month },
+      where: {
+        billingYear: year,
+        billingMonth: month,
+        expense: { userId },
+      },
       include: {
         expense: {
-          include: { card: { select: { name: true } } },
+          include: {
+            card: { select: { name: true } },
+            category: { select: { name: true, color: true } },
+          },
         },
       },
       orderBy: { expense: { description: 'asc' } },
@@ -28,6 +35,10 @@ export class PrismaChargeRepository implements IChargeRepository {
         installmentCount: c.expense.installmentCount,
         cardId: c.expense.cardId,
         card: { name: c.expense.card.name },
+        categoryId: c.expense.categoryId,
+        category: c.expense.category
+          ? { name: c.expense.category.name, color: c.expense.category.color }
+          : null,
       },
     }))
   }
@@ -67,7 +78,7 @@ export class PrismaChargeRepository implements IChargeRepository {
     await prisma.charge.deleteMany({ where: { expenseId } })
   }
 
-  async getMonthlyTotals(fromYear: number, fromMonth: number, months: number) {
+  async getMonthlyTotals(fromYear: number, fromMonth: number, months: number, userId: string) {
     // Build month range
     const range: { year: number; month: number }[] = []
     let y = fromYear
@@ -82,7 +93,7 @@ export class PrismaChargeRepository implements IChargeRepository {
       range.map(async ({ year, month }) => {
         const agg = await prisma.charge.groupBy({
           by: ['billingYear', 'billingMonth'],
-          where: { billingYear: year, billingMonth: month },
+          where: { billingYear: year, billingMonth: month, expense: { userId } },
           _sum: { amount: true },
         })
 
@@ -90,7 +101,7 @@ export class PrismaChargeRepository implements IChargeRepository {
           where: {
             billingYear: year,
             billingMonth: month,
-            expense: { type: 'INSTALLMENT' },
+            expense: { type: 'INSTALLMENT', userId },
           },
           _sum: { amount: true },
         })
@@ -99,7 +110,7 @@ export class PrismaChargeRepository implements IChargeRepository {
           where: {
             billingYear: year,
             billingMonth: month,
-            expense: { type: 'RECURRING' },
+            expense: { type: 'RECURRING', userId },
           },
           _sum: { amount: true },
         })
