@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database (local SQLite only — never commit data files)
+apps/api/prisma/dev.db
+apps/api/prisma/dev.db-journal
+apps/api/prisma/dev.db-shm
+apps/api/prisma/dev.db-wal
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite
+apps/web/dist/
+apps/web/.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# pnpm
+.pnpm-store/

@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Card {
+  id            String    @id @default(cuid())
+  name          String
+  bank          String?
+  color         String?
+  cutoffDay     Int
+  paymentDueDay Int
+  creditLimit   Float?
+  createdAt     DateTime  @default(now())
+  expenses      Expense[]
+}
+
+model Expense {
+  id               String    @id @default(cuid())
+  description      String
+  amount           Float
+  type             String    // "INSTALLMENT" | "RECURRING"
+  purchaseDate     DateTime
+  cardId           String
+  card             Card      @relation(fields: [cardId], references: [id])
+  installmentCount Int?
+  endDate          DateTime?
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  charges          Charge[]
+}
+
+model Charge {
+  id             String    @id @default(cuid())
+  expenseId      String
+  expense        Expense   @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  amount         Float
+  billingYear    Int
+  billingMonth   Int
+  installmentNo  Int?
+  isPaid         Boolean   @default(false)
+  paidAt         DateTime?
+
+  @@unique([expenseId, billingYear, billingMonth])
+  @@index([billingYear, billingMonth])
+}

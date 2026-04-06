@@ -1,0 +1,45 @@
+import { useParams, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { useMonthDetail } from '../hooks/useProjection'
+import { Button } from '@/components/ui/button'
+import { formatCurrency, formatMonth } from '@/lib/utils'
+
+export function MonthDetailPage() {
+  const { year, month } = useParams<{ year: string; month: string }>()
+  const navigate = useNavigate()
+  const { data, isLoading } = useMonthDetail(Number(year), Number(month))
+
+  if (isLoading) return <div className="text-muted-foreground text-sm">Cargando...</div>
+  if (!data) return null
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} />
+        </Button>
+        <div>
+          <h2 className="text-xl font-semibold capitalize">{formatMonth(data.year, data.month)}</h2>
+          <p className="text-sm text-muted-foreground">Total: {formatCurrency(data.total)}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {data.charges.map((charge) => (
+          <div key={charge.id} className="flex items-center justify-between p-4 rounded-lg border bg-card">
+            <div>
+              <p className="font-medium text-sm">{charge.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {charge.cardName}
+                {charge.installmentNo && charge.installmentCount
+                  ? ` · Cuota ${charge.installmentNo}/${charge.installmentCount}`
+                  : ' · Recurrente'}
+              </p>
+            </div>
+            <span className="font-semibold text-sm">{formatCurrency(charge.amount)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
