@@ -128,6 +128,46 @@ export class PrismaChargeRepository implements IChargeRepository {
     return results
   }
 
+  async findCompletedInPreviousMonth(year: number, month: number, userId: string) {
+    const prevMonth = month === 1 ? 12 : month - 1
+    const prevYear = month === 1 ? year - 1 : year
+
+    const currentMonthCharges = await prisma.charge.findMany({
+      where: { billingYear: year, billingMonth: month, expense: { userId } },
+      select: { expenseId: true },
+    })
+    const currentMonthExpenseIds = currentMonthCharges.map((c) => c.expenseId)
+
+    const completedCharges = await prisma.charge.findMany({
+      where: {
+        billingYear: prevYear,
+        billingMonth: prevMonth,
+        expense: { userId },
+        ...(currentMonthExpenseIds.length > 0 && { expenseId: { notIn: currentMonthExpenseIds } }),
+      },
+      include: {
+        expense: {
+          include: {
+            card: { select: { name: true } },
+            category: { select: { name: true, color: true } },
+          },
+        },
+      },
+      orderBy: { expense: { description: 'asc' } },
+    })
+
+    return completedCharges.map((c) => ({
+      expenseId: c.expenseId,
+      description: c.expense.description,
+      amount: Number(c.amount),
+      type: c.expense.type as string,
+      cardName: c.expense.card.name,
+      installmentCount: c.expense.installmentCount,
+      categoryName: c.expense.category?.name ?? null,
+      categoryColor: c.expense.category?.color ?? null,
+    }))
+  }
+
   private toEntity(charge: any): ChargeEntity {
     return {
       id: charge.id,

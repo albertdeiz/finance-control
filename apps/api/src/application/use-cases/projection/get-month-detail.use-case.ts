@@ -21,7 +21,10 @@ export class GetMonthDetailUseCase {
   constructor(private chargeRepo: IChargeRepository) {}
 
   async execute(year: number, month: number, userId: string): Promise<MonthDetail & { charges: ChargeDetail[] }> {
-    const charges = await this.chargeRepo.findByMonth(year, month, userId)
+    const [charges, completedLastMonth] = await Promise.all([
+      this.chargeRepo.findByMonth(year, month, userId),
+      this.chargeRepo.findCompletedInPreviousMonth(year, month, userId),
+    ])
 
     const total = charges.reduce((sum, c) => sum + c.amount, 0)
 
@@ -44,6 +47,7 @@ export class GetMonthDetailUseCase {
         categoryColor: c.expense.category?.color ?? null,
         isPaid: c.isPaid,
       })),
+      completedLastMonth,
     }
   }
 }

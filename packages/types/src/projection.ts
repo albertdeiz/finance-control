@@ -21,6 +21,18 @@ export interface MonthDetail {
   month: number
   total: number
   charges: ChargeDetail[]
+  completedLastMonth: CompletedExpense[]
+}
+
+export interface CompletedExpense {
+  expenseId: string
+  description: string
+  amount: number
+  type: ExpenseType
+  cardName: string
+  installmentCount: number | null
+  categoryName: string | null
+  categoryColor: string | null
 }
 
 export interface ChargeDetail {
