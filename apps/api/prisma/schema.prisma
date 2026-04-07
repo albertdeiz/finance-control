@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -28,6 +28,11 @@ model Category {
   expenses  Expense[]
 }
 
+enum ExpenseType {
+  INSTALLMENT
+  RECURRING
+}
+
 model Card {
   id            String    @id @default(cuid())
   userId        String
@@ -37,27 +42,27 @@ model Card {
   color         String?
   cutoffDay     Int
   paymentDueDay Int
-  creditLimit   Float?
+  creditLimit   Decimal?
   createdAt     DateTime  @default(now())
   expenses      Expense[]
 }
 
 model Expense {
-  id               String     @id @default(cuid())
+  id               String      @id @default(cuid())
   userId           String
-  user             User       @relation(fields: [userId], references: [id])
+  user             User        @relation(fields: [userId], references: [id])
   description      String
-  amount           Float
-  type             String
+  amount           Decimal
+  type             ExpenseType
   purchaseDate     DateTime
   cardId           String
-  card             Card       @relation(fields: [cardId], references: [id])
+  card             Card        @relation(fields: [cardId], references: [id])
   categoryId       String?
-  category         Category?  @relation(fields: [categoryId], references: [id])
+  category         Category?   @relation(fields: [categoryId], references: [id])
   installmentCount Int?
   endDate          DateTime?
-  isActive         Boolean    @default(true)
-  createdAt        DateTime   @default(now())
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
   charges          Charge[]
 }
 
@@ -65,7 +70,7 @@ model Charge {
   id            String    @id @default(cuid())
   expenseId     String
   expense       Expense   @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-  amount        Float
+  amount        Decimal
   billingYear   Int
   billingMonth  Int
   installmentNo Int?
